@@ -1,0 +1,73 @@
+# vim:ft=sh:
+
+_filedir () 
+{ 
+    local IFS='
+';
+    _tilde "$cur" || return;
+    local -a toks;
+    local reset;
+    if [[ "$1" == -d ]]; then
+        reset=$(shopt -po noglob);
+        set -o noglob;
+        toks=($(compgen -d -- "$cur"));
+        IFS=' ';
+        $reset;
+        IFS='
+';
+    else
+        local quoted;
+        _quote_readline_by_ref "$cur" quoted;
+        local xspec=${1:+"!*.@($1|${1^^})"} plusdirs=();
+        local opts=(-f -X "$xspec");
+        [[ -n $xspec ]] && plusdirs=(-o plusdirs);
+        [[ -n ${COMP_FILEDIR_FALLBACK-} ]] || opts+=("${plusdirs[@]}");
+        reset=$(shopt -po noglob);
+        set -o noglob;
+        toks+=($(compgen "${opts[@]}" -- $quoted));
+        IFS=' ';
+        $reset;
+        IFS='
+';
+        [[ -n ${COMP_FILEDIR_FALLBACK:-} && -n "$1" && ${#toks[@]} -lt 1 ]] && { 
+            reset=$(shopt -po noglob);
+            set -o noglob;
+            toks+=($(compgen -f "${plusdirs[@]}" -- $quoted));
+            IFS=' ';
+            $reset;
+            IFS='
+'
+        };
+    fi;
+    if [[ ${#toks[@]} -ne 0 ]]; then
+        compopt -o filenames 2> /dev/null;
+        COMPREPLY+=("${toks[@]}");
+    fi
+    if [[ "${cur::1}" == "~" ]] ; then
+      cur=$(echo "$cur" | sed "s#^~#$HOME#g")
+    fi
+    chs=($(chsdir "x$1" "$cur" ))
+    if (( $COMP_TYPE == 63 )); then
+      # COMPREPLY=( "${toks[@]}" "${chs[@]}" )
+      COMPREPLY=( "${chs[@]}" )
+      if (( ${#chs[@]} == 0 )); then
+        COMPREPLY=( "${toks[@]}" )
+      fi
+    elif (( $COMP_TYPE == 9 )); then
+      local first_neq first_word
+      first_word=${chs[0]::1}
+      first_neq=0
+      for key in "${!chs[@]}";do
+        [[ ${chs[$key]::1} != $first_word ]] && first_neq=1
+      done
+      if (( ${#chs[@]} == 1 )); then
+        COMPREPLY=( "${chs[@]}" )
+      elif (( ${#chs[@]} == 0 )); then
+        COMPREPLY=( "${toks[@]}" )
+      elif (( $first_neq == 0 )); then
+        COMPREPLY=( "${chs[@]}" )
+     else
+       unset COMPREPLY
+      fi
+    fi
+}
