@@ -49,7 +49,7 @@ proc str2py(name: string): string =
 #  # return ret.encode("UTF8")
 #  # return getpystr(name)
 
-proc main(): string =
+proc main()=
   if paramCount() != 2:
     quit()
 
@@ -61,7 +61,7 @@ proc main(): string =
     pinyin = ""
     dirname = splitFile(cur)[0]
     path = ""
-    cur_name = cur.splitFile().name
+    cur_name = [cur.splitFile().name, cur.splitFile().ext].join("")
 
   if dirname.len == 0:
     dirname = "./"
@@ -93,9 +93,9 @@ proc main(): string =
     # if pinyin.startsWith(cur_name):
       ret.add path
   if ret.len == 1:
-    return joinPath(dirname, ret[0])
+    echo joinPath(dirname, ret[0])
   elif ret.len == 0:
-    return ""
+    return
   else:
     var
       first_word = ret[0].toRunes[0]
@@ -113,7 +113,9 @@ proc main(): string =
           echo joinPath("'", dirname, i, "'")
         else:
           echo joinPath(dirname, i)
-      return ""
+      return
 
-    return ret.join("\n")
-echo main()
+    # return ret.join("\n")
+    if ret.len > 0:
+      echo ret.join("\n")
+main()
