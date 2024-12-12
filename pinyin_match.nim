@@ -1,4 +1,4 @@
-import os, strutils, unicode, streams
+import os, strutils, unicode
 import std/parseopt
 import lmdb
 
