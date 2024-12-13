@@ -100,7 +100,7 @@ _py_completion() {
 		[ ${#rt[@]} -ne 0 ] && _compopt_o_filenames
 	fi
 
-	COMPREPLY=("${COMPREPLY[@]}" "${rt[@]}")
+	[ ${#rt[@]} -ne 0 ] && COMPREPLY=("${rt[@]}")
 
 	if (($COMP_TYPE == 9)); then
 		local key
