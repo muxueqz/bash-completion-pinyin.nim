@@ -79,9 +79,6 @@ _py_completion() {
 
 	test ! -d "$dname_real" && return 0
 
-	# 修复补全内容重复造成的无法补全
-	[[ "$dname_real" == "." || "$dname_real" == "$HOME" ]] && dname_real=""
-
 	# 修复多出来的目录名
 	[[ "${cur: -1}" == "/" ]] && return 0
 
@@ -105,8 +102,7 @@ _py_completion() {
 	if (($COMP_TYPE == 9)); then
 		local key
 		local first_value=${rt[0]##*/}
-		local first_word=${first_value::1}
-		local first_neq=0
+		local first_word=${first_value::${#bname_real}}
 		for key in "${!COMPREPLY[@]}"; do
 			local value=${COMPREPLY[$key]##*/}
 			# 修复补全被丢弃的情况
