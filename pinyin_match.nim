@@ -18,7 +18,7 @@ proc getpystr(name: Rune): string =
     key = name.ord.intToStr
   return txn.get(dbi, key)
 
-proc str2py(name: string, max_count: int=3): seq[string] =
+proc str2py(name: string): seq[string] =
   result = @[""]
   for i, n in name.toRunes():
     var temp_result:seq[string] = @[]
