@@ -20,7 +20,6 @@ proc getpystr(name: Rune): string =
 
 proc str2py(name: string, max_count: int=3): seq[string] =
   result = @[""]
-  var count = 0
   for i, n in name.toRunes():
     var temp_result:seq[string] = @[]
     for prefix in result:
@@ -31,18 +30,15 @@ proc str2py(name: string, max_count: int=3): seq[string] =
         discard
       for value in values:
         temp_result.add(prefix & value)
-    if count >= max_count:
-      break
-    count += 1
     result = temp_result
 
 proc matchLineWithKeyword(line: string, keyword: string, mode: MatchMode): int =
-  var
-    line_file = line.splitFile
-    py_lines = (line_file.name & line_file.ext).str2py(keyword.len)
-    py_keyword = str2py(keyword, keyword.len)[0]
+  let 
+    line_basename = line.lastPathPart
+    py_lines = line_basename.runeSubStr(0, keyword.toRunes.len).str2py
+    py_keyword = keyword.str2py[0]
   for py_file in py_lines:
-    if (line_file.dir & py_file) == line:
+    if (line.parentDir & py_file) == line:
       return -1
     if py_file.startsWith(keyword):
       return 1
