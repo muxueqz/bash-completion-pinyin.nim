@@ -1,5 +1,6 @@
 import os, strutils, unicode
 import std/parseopt
+import std/sets
 import lmdb
 
 
@@ -17,31 +18,32 @@ proc getpystr(name: Rune): string =
     key = name.ord.intToStr
   return txn.get(dbi, key)
 
-proc str2py(name: string): string =
-  var
-    uchr = ""
-    filename = name.toRunes()
-    ret: seq[string]
-  for i, n in filename:
-    try:
-      uchr = getpystr(n)
-      ret.add $uchr[0]
-      # echo i, n, uchr
-    except:
-      ret.add n.toUTF8
-      # echo i, n
-  return ret.join("")
+proc str2py(name: string): seq[string] =
+  result = @[""]
+  for i, n in name.toRunes():
+    var temp_result:seq[string] = @[]
+    for prefix in result:
+      var values = n.toUTF8.toOrderedSet
+      try:
+        values = n.getpystr.toOrderedSet
+      except:
+        discard
+      for value in values:
+        temp_result.add(prefix & value)
+    result = temp_result
+
 proc matchLineWithKeyword(line: string, keyword: string, mode: MatchMode): int =
   var
-    py_line= $str2py(line)
-    py_keyword = $str2py(keyword)
-  if py_line == line:
-    return -1
-  var py_file = splitFile(py_line)
-  if (py_file.name & py_file.ext).startsWith(keyword):
-    return 1
-  if py_keyword != keyword and (py_file.name & py_file.ext).startsWith(py_keyword):
-    return 1
+    py_lines = str2py(line)
+    py_keyword = str2py(keyword)[0]
+  for py_line in py_lines:
+    if py_line == line:
+      return -1
+    var py_file = splitFile(py_line)
+    if (py_file.name & py_file.ext).startsWith(keyword):
+      return 1
+    if py_keyword != keyword and (py_file.name & py_file.ext).startsWith(py_keyword):
+      return 1
     
   return -1
 proc writeHelp() =
