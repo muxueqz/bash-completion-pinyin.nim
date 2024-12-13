@@ -80,7 +80,7 @@ _py_completion() {
 	test ! -d "$dname_real" && return 0
 
   # 修复补全内容重复造成的无法补全
-  [[ "$dname_real" == "." ]] && dname_real=""
+  [[ "$dname_real" == "." || "$dname_real" == "$HOME" ]] && dname_real=""
 
 	if [[ "$1" == "-d" ]]; then
 		rt=(${rt[@]-} $(
