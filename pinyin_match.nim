@@ -1,22 +1,17 @@
 import os, strutils, unicode
 import std/parseopt
 import std/sets
-import lmdb
+import pinyin_db
+import tables
 
 
 type
   MatchMode = enum
     MatchModeFull, MatchModeFirstLetter
 
-let db_path = os.joinPath(os.getAppDir(), "./pinyindb")
-let dbenv = newLMDBEnv(db_path)
-let  txn = dbenv.newTxn()
-
 proc getpystr(name: Rune): string =
-  let  dbi = txn.dbiOpen("", 0)
-  var
-    key = name.ord.intToStr
-  return txn.get(dbi, key)
+  var key = name.ord
+  return pinyin_db.pinyin_db[name.ord]
 
 proc str2py(name: string): seq[string] =
   result = @[""]
