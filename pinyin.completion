@@ -109,7 +109,6 @@ _py_completion() {
 			[[ ! "$value" == $first_prefix* ]] && unset COMPREPLY
 		done
 	fi
-	source ~/workspaces/bash-completion-pinyin.nim/pinyin.completion.debug.sh
 }
 
 if _py_save_function _comp_compgen_filedir _py_bak_filedir; then
