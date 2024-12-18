@@ -1,7 +1,7 @@
 import tables
 import unicode
-import lmdb
-import normalize
+import unidecode
+import strformat
 
 import strutils
 
@@ -15,32 +15,22 @@ for line in pinyin_db.lines:
       code = ("0x" & line_seq[0][2..^2]).parseHexInt
       pinyin = line_seq[1].split(',')
       pinyin_first_letters : seq[string]
-    if code == "0x6848".parseHexInt:
-      echo code, pinyin, pinyin[0], pinyin[0].runeSubStr(0, 1).toNFKD()[0]
+    # if code == "0x6848".parseHexInt:
+    #   echo (code, pinyin, pinyin[0], pinyin[0].runeSubStr(0, 1).unidecode)
     for i in pinyin:
-      # echo i[2..^1], i[2..^1].len
-      # pinyin_first_letters.add($i[0])
-      pinyin_first_letters.add($i.runeSubStr(0, 1).toNFKD()[0])
+      pinyin_first_letters.add($i.runeSubStr(0, 1).unidecode)
     # echo (code, pinyin, code.Rune)
     pinyin_tables[code] = pinyin_first_letters
 
-let dbenv = newLMDBEnv("./pinyindb")
-let  txn = dbenv.newTxn()
-let  dbi = txn.dbiOpen("", 0)
-  # out_json = %* pinyin_tables
-  # out_json = %* {}
-  # o_t = {"key":"t"}
-# out_json = %* o_t
+
+echo """
+import tables
+# var T* = initTable[int, string]()
+var pinyin_db* = {
+"""
 for k, v in pinyin_tables.pairs:
-  # out_json[k.intToStr] = %* v.join
-  txn.put(dbi, k.intToStr, v.join(""))
-# writeFile("pinyin.db", $out_json)
-# let g = txn.get(dbi, "foo")
-# txn.del(dbi, "foo", "value")
+  echo (fmt"""{k.intToStr}: "{v.join("")}",""")
 
-# commit or abort transaction
-txn.commit() # or txn.abort()
-
-# close dbi and env
-dbenv.close(dbi)
-dbenv.envClose()
+echo """
+   }.toTable
+"""
